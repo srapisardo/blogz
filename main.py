@@ -36,23 +36,23 @@ def blog():
 def new_post():
     if request.method == 'POST':
         blog_title = request.form['blog-title']
-        blog_body = request.form['blog-entry']
+        blog_entry = request.form['blog-entry']
         title_error = ''
-        body_error = ''
+        entry_error = ''
 
         if not blog_title:
-            title_error = "Please input a blog  title"
-        if not blog_body:
-            body_error = "Please input a blog entry"
+            title_error = "Please input a blog title"
+        if not blog_entry:
+            entry_error = "Please input a blog entry"
 
-        if not body_error and not title_error:
-            new_entry = Blog(blog_title, blog_body)     
+        if not entry_error and not title_error:
+            new_entry = Blog(blog_title, blog_entry)     
             db.session.add(new_entry)
             db.session.commit()        
             return redirect('/blog?id={}'.format(new_entry.id)) 
         else:
-            return render_template('newpost.html', title='New Entry', title_error=title_error, body_error=body_error, 
-                blog_title=blog_title, blog_body=blog_body)
+            return render_template('newpost.html', title='New Entry', title_error=title_error, entry_error=entry_error, 
+                blog_title=blog_title, blog_entry=blog_entry)
     
     return render_template('newpost.html', title='New Entry')
 
