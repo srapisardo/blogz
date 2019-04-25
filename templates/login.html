@@ -6,16 +6,14 @@
 <form action="/login" method="post">
     <table>
         <tr>
-            <td><label for="email">Email</label></td>
-            <td>
-                <input name="email" type="email" value="{{ email }}">
-            </td>
+            <td><label for="username">Username</label></td>
+            <td><input name="username" type="username"></td>
+            <td><p class="error">{{username_error}}</p></td>
         </tr>
         <tr>
             <td><label for="password">Password</label></td>
-            <td>
-                <input name="password" type="password">
-            </td>
+            <td><input name="password" type="password"></td>
+            <td><p class="error">{{password_error}}</p></td>
         </tr>
     </table>
     <input type="submit" value="Login">

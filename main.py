@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -6,7 +6,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:launchcode@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
-
+app.secret_key = 'sjr719cpnohis'
 
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +23,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(120))
-    blogs = db.relationship('Blogs', backref='owner')
+    blogs = db.relationship('Blog', backref='owner')
 
     def __init__(self, username, password):
         self.username = username
@@ -46,16 +46,17 @@ def blog():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+    username_error = ""
+    password_error = ""
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(username=username).first()
         if user and user.password == password:
-            session['email'] = email
-            flash("Logged in")
+            session['username'] = username
             return redirect('/newpost')
         else:
-            flash('User password incorrect, or user does not exist', 'error')
+            return(render_template('login.html', username_error="Your username or password is incorrect." ))
 
     return render_template('login.html')
 
@@ -63,16 +64,16 @@ def login():
 @app.route('/signup', methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
 
-        existing_user = User.query.filter_by(email=email).first()
+        existing_user = User.query.filter_by(username=username).first()
         if not existing_user:
-            new_user = User(email, password)
+            new_user = User(username, password)
             db.session.add(new_user)
             db.session.commit()
-            session['email'] = email
+            session['username'] = username
             return redirect('/')
         else:
             return "<h1>Duplicate user</h1>"
