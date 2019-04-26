@@ -29,9 +29,15 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup', 'index', 'blog_listing']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
+
 @app.route('/')
 def index():
-    return redirect('/blog')
+    return redirect('/index')
 
 @app.route('/blog')
 def blog():
@@ -63,20 +69,55 @@ def login():
 
 @app.route('/signup', methods=['POST', 'GET'])
 def register():
+    username_error = ''
+    password_error = ''
+    verify_error = ''
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
-
         existing_user = User.query.filter_by(username=username).first()
-        if not existing_user:
-            new_user = User(username, password)
-            db.session.add(new_user)
-            db.session.commit()
-            session['username'] = username
-            return redirect('/')
+        
+        if username == "":
+            username_error = "Invalid username"
+
+        if password == "":
+            password_error = "Invalid password" 
+
+        if len(username) < 3:
+            username = ''
+            username_error = "Invalid username"
+
+        if " " in username: 
+            username = ''
+            username_error = "Invalid username"
+
+        if len(password) < 3:
+            password = ""
+            password_error = "Invalid password"
+
+        if " " in password:
+            password = ""
+            password_error = "Invalid password"
+
+        if password != verify:
+            password = ""
+            verify = ""
+            verify_error = "Passwords do not match"
+
+        if not username_error and not password_error and not verify_error:
+            if not existing_user:
+                new_user = User(username, password)
+                db.session.add(new_user)
+                db.session.commit()
+                session['username'] = username
+                return redirect('/newpost')
+            else:
+                username_error = "Username already exist."
+
         else:
-            return "<h1>Duplicate user</h1>"
+            return render_template('signup.html', username_error=username_error, password_error=password_error, verify_error=verify_error,
+            username=username, password=password, verify=verify)
 
     return render_template('signup.html')
 
@@ -103,6 +144,13 @@ def new_post():
                 blog_title=blog_title, blog_entry=blog_entry)
     
     return render_template('newpost.html', title='New Entry')
+
+
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/blog')
+
 
 if  __name__ == "__main__":
     app.run()
