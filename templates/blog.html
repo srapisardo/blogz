@@ -12,6 +12,7 @@
     
     <a href="/blog?id={{post.id}}"><h2>{{post.title}}</h2></a>
     <p>{{post.body}}</p>
+    <p id="author">Written by <a href="blog?user={{post.owner.id}}">{{post.owner.username}}</a>.</p>
     <hr>            
     
     {% endfor %}  

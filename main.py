@@ -48,8 +48,8 @@ def blog():
     if "id" in request.args:
         id = request.args.get('id')
         post = Blog.query.get(id)
-        
-        return render_template('blogpost.html', post=post)
+
+        return render_template('blogpost.html', post=post, blog=blog, id=id)
 
     if "user" in request.args:
         owner_id = request.args.get('user')

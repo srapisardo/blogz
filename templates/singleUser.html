@@ -6,9 +6,9 @@
         <h1>Welcome to {{user.username}}'s blog</h1>
         {% for blog in user.blogs %}
         <li>
-            <h2> <a href= "/blog?id= {{ blog.id }}" > {{blog.title}} </a> </h2>
+            <h2> <a href= "/blog?id={{ blog.id }}" > {{blog.title}} </a> </h2>
             <p> {{blog.body}} </p>
-            <p class="entry-user">written by <a href= "/blog?user={{ user.id }}" > {{user.username}} </a></p>
+            <p class="author">written by <a href= "/blog?user={{ user.id }}" > {{user.username}} </a></p>
             </li>
         {% endfor %}
     </ul>
