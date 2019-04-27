@@ -41,16 +41,24 @@ def index():
     users = User.query.all()
     return render_template('index.html', users=users)
 
-@app.route('/blog', methods=['GET'])
+@app.route('/blog', methods=['GET', 'POST'])
 def blog():
-    blog_id = request.args.get('id')
+    posts = Blog.query.all()
 
-    if blog_id == None:
-        posts = Blog.query.all()
-        return render_template('blog.html', posts=posts, title='Build-a-blog')
-    else:
-        post = Blog.query.get(blog_id)
-        return render_template('blogpost.html', post=post, title='Blog Entry')
+    if "id" in request.args:
+        id = request.args.get('id')
+        post = Blog.query.get(id)
+        
+        return render_template('blogpost.html', post=post)
+
+    if "user" in request.args:
+        owner_id = request.args.get('user')
+        userEntries = Blog.query.filter_by(owner_id=owner_id)
+        username = User.query.get(owner_id)
+
+        return render_template('singleUser.html', user=username)
+
+    return render_template('blog.html', posts=posts)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
