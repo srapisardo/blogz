@@ -30,17 +30,18 @@ class User(db.Model):
         self.password = password
 
 @app.before_request
-def req_login():
-    allowed_routes = ['login', 'signup', 'index', 'blog']
+def require_login():
+    allowed_routes = ['login', 'blog', 'index', 'signup']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
-@app.route('/index')
+
+@app.route('/')
 def index():
     users = User.query.all()
     return render_template('index.html', users=users)
 
-@app.route('/blog')
+@app.route('/blog', methods=['GET'])
 def blog():
     blog_id = request.args.get('id')
 
@@ -71,7 +72,7 @@ def login():
 
 
 @app.route('/signup', methods=['POST', 'GET'])
-def register():
+def signup():
     username_error = ''
     password_error = ''
     verify_error = ''
@@ -129,6 +130,7 @@ def new_post():
     if request.method == 'POST':
         blog_title = request.form['blog-title']
         blog_entry = request.form['blog-entry']
+        owner = User.query.filter_by(username=session['username']).first()
         title_error = ''
         entry_error = ''
 
@@ -138,7 +140,7 @@ def new_post():
             entry_error = "Please input a blog entry"
 
         if not entry_error and not title_error:
-            new_entry = Blog(blog_title, blog_entry)     
+            new_entry = Blog(blog_title, blog_entry, owner)     
             db.session.add(new_entry)
             db.session.commit()        
             return redirect('/blog?id={}'.format(new_entry.id)) 
