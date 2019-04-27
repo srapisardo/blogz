@@ -30,14 +30,15 @@ class User(db.Model):
         self.password = password
 
 @app.before_request
-def require_login():
-    allowed_routes = ['login', 'signup', 'index', 'blog_listing']
+def req_login():
+    allowed_routes = ['login', 'signup', 'index', 'blog']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
 @app.route('/')
 def index():
-    return redirect('/index')
+    users = User.query.all()
+    return render_template('index.html', users=users)
 
 @app.route('/blog')
 def blog():
@@ -78,42 +79,46 @@ def register():
         verify = request.form['verify']
         existing_user = User.query.filter_by(username=username).first()
         
+        if existing_user:
+            username_error = "Username already exist." 
+        
         if username == "":
+            username_error = "Invalid username"
+        elif len(username) < 3:
+            username = ''
+            username_error = "Invalid username"
+        elif " " in username: 
+            username = ''
             username_error = "Invalid username"
 
         if password == "":
             password_error = "Invalid password" 
-
-        if len(username) < 3:
-            username = ''
-            username_error = "Invalid username"
-
-        if " " in username: 
-            username = ''
-            username_error = "Invalid username"
-
-        if len(password) < 3:
+        elif len(password) < 3:
+            password = ""
+            password_error = "Invalid password"
+        elif " " in password:
             password = ""
             password_error = "Invalid password"
 
-        if " " in password:
+        if verify != password:
             password = ""
-            password_error = "Invalid password"
-
-        if password != verify:
+            verify = ""
+            verify_error = "Passwords do not match"
+        elif verify == "":
             password = ""
             verify = ""
             verify_error = "Passwords do not match"
 
-        if not username_error and not password_error and not verify_error:
-            if not existing_user:
-                new_user = User(username, password)
-                db.session.add(new_user)
-                db.session.commit()
-                session['username'] = username
-                return redirect('/newpost')
-            else:
-                username_error = "Username already exist."
+
+        #if not username_error and not password_error and not verify_error:
+            #return render_template('index.html', username = username)
+        
+        if not existing_user and not username_error and not password_error and not verify_error:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
 
         else:
             return render_template('signup.html', username_error=username_error, password_error=password_error, verify_error=verify_error,
