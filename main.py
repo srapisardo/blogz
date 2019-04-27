@@ -35,7 +35,7 @@ def req_login():
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
-@app.route('/')
+@app.route('/index')
 def index():
     users = User.query.all()
     return render_template('index.html', users=users)
@@ -62,8 +62,10 @@ def login():
         if user and user.password == password:
             session['username'] = username
             return redirect('/newpost')
+        if not user:
+            return render_template('login.html', username_error="Username does not exist.")
         else:
-            return(render_template('login.html', username_error="Your username or password is incorrect." ))
+            return render_template('login.html', password_error="Your username or password was incorrect.")
 
     return render_template('login.html')
 
@@ -109,10 +111,6 @@ def register():
             verify = ""
             verify_error = "Passwords do not match"
 
-
-        #if not username_error and not password_error and not verify_error:
-            #return render_template('index.html', username = username)
-        
         if not existing_user and not username_error and not password_error and not verify_error:
             new_user = User(username, password)
             db.session.add(new_user)
